@@ -1,0 +1,67 @@
+# pandasのインポート
+import pandas as pd
+
+# numpyのインポート
+import numpy as np
+
+# 初期価格決定関数の定義
+def initial_pricing(date):
+
+    # 宿泊月と宿泊曜日の作成
+    month = date.strftime("%m")
+    week = date.strftime("%a")
+
+    # 価格を2000円上乗せする条件
+    if month == "07" or  month == "08" or  week == "Fri" or  week == "Sat":
+        initial_price = 12000
+    else:
+        initial_price = 10000
+        
+    return initial_price
+
+# 初期価格決定関数の実行
+# print(initial_pricing(pd.Timestamp("2019-03-01")))
+
+
+# 理想のブッキングカーブの作成
+target_booking_curve = np.append(np.linspace(0, 20, 28), [20,20])
+
+# 変動価格決定関数の定義
+def dynamic_pricing(current_date, current_price, current_rooms, elapsed_days):
+    
+    # 現時点での理想の予約数
+    target_rooms = target_booking_curve[elapsed_days]
+
+    # 現在の予約数と理想の予約数との差
+    diff_rooms = current_rooms - target_rooms
+    # 現在の曜日
+    current_week = current_date.strftime("%a")
+                
+    # 理想よりも予約数が2下回っている場合
+    if diff_rooms <= -2:
+        # 土曜・日曜の場合は現状維持
+        if current_week == "Sat" or  current_week == "Sun":
+            new_price = current_price
+        # 土曜・日曜以外の場合は、1000円値下げ
+        else:
+            new_price = current_price - 1000
+            
+    # 理想よりも予約数が2上回っている場合は1000円値上げ
+    elif diff_rooms >= 2: 
+        new_price = current_price + 1000
+        
+    # 理想の予約数との乖離が2未満の場合は現状維持
+    else:
+        new_price = current_price
+        
+    # 変更後の宿泊料金が上限の20000円を上回っている場合は、上限値を変更後の価格とする
+    if new_price > 20000:
+        new_price = 20000
+    # 変更後の宿泊料金が下限の5000円を下回っている場合は、下限値を変更後の価格とする
+    elif new_price < 5000:
+        new_price = 5000
+        
+    return new_price
+
+# 変動価格決定関数の実行
+# print(dynamic_pricing(pd.Timestamp("2019-01-15"), 13000, 5, 10))
