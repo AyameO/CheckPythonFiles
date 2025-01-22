@@ -1,0 +1,58 @@
+# pandasのインポート
+import pandas as pd
+
+# データの読み込み
+df_201903 = pd.read_csv("booking_data_201903.csv", parse_dates=["予約受付日","宿泊日"])
+df_202003 = pd.read_csv("booking_data_202003.csv", parse_dates=["予約受付日","宿泊日"])
+
+# numpyのインポート
+import numpy as np
+
+# 理想のブッキングカーブの作成
+x = np.linspace(0,29,30)
+tmp_y = np.linspace(0,20,28)
+y = np.append(tmp_y, [20,20])
+
+# datetimeのインポート
+import datetime as dt
+
+# 予約受付開始日から宿泊日前日までの連続する日付の作成
+stay_dates_201903 = pd.date_range(start="2019-03-01", end="2019-03-31" , freq='D')
+stay_dates_202003 = pd.date_range(start="2020-03-01", end="2020-03-31" , freq='D')
+
+# matplotlib.pyplotのインポート
+import matplotlib.pyplot as plt
+
+# キャンバスとグラフの作成
+fig, ax = plt.subplots(1,2,figsize=(12,5),sharey=True)
+
+# 2019年3月全宿泊日のブッキングカーブの作成・描画
+for stay_date in stay_dates_201903:
+    dt_date = pd.Timestamp(stay_date)
+    new_index = pd.date_range(start=dt_date - dt.timedelta(days=30), end=dt_date - dt.timedelta(days=1) , freq='D')
+    vcc = df_201903[df_201903["宿泊日"] == dt_date]["予約受付日"].value_counts().reindex(new_index, fill_value=0).sort_index().cumsum().reset_index(drop=True)
+    vcc.plot(ax=ax[0], linewidth=0.5)
+
+# 理想のブッキングカーブの描画
+ax[0].plot(x,y,linewidth=2)
+# グラフの装飾
+ax[0].set_title("2019年3月のブッキングカーブ")
+ax[0].set_xlabel("予約受付開始からの経過日数")
+ax[0].set_ylabel("予約された部屋の数")
+ax[0].set_ylim(0,)
+
+# 2020年3月全宿泊日のブッキングカーブの作成・描画
+for stay_date in stay_dates_202003:
+    dt_date = pd.Timestamp(stay_date)
+    new_index = pd.date_range(start=dt_date - dt.timedelta(days=30), end=dt_date - dt.timedelta(days=1) , freq='D')
+    vcc = df_202003[df_202003["宿泊日"] == dt_date]["予約受付日"].value_counts().reindex(new_index, fill_value=0).sort_index().cumsum().reset_index(drop=True)
+    vcc.plot(ax=ax[1], linewidth=0.5)
+        
+# 理想のブッキングカーブの描画
+ax[1].plot(x,y,linewidth=2)
+ax[1].set_title("2020年3月のブッキングカーブ")
+# グラフの装飾
+ax[1].set_xlabel("予約受付開始からの経過日数")
+
+# グラフの表示
+plt.show()
