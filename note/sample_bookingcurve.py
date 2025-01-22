@@ -43,3 +43,11 @@ plt.ylabel("予約された部屋の数")
 plt.legend()
 plt.grid()
 plt.show()
+
+# sklearn.metricsのインポート
+from sklearn import metrics
+
+# 理想的なブッキングカーブとのMAEの算出
+print(metrics.mean_absolute_error(vcc1, y))
+print(metrics.mean_absolute_error(vcc2, y))
+print(metrics.mean_absolute_error(vcc3, y))
